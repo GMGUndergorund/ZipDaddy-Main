@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ game.title }}{% endblock %}
+{% block content %}
+<h1>{{ game.title }}</h1>
+
+{% if game.description %}
+  <p>{{ game.description }}</p>
+{% else %}
+  <p><em>No description provided.</em></p>
+{% endif %}
+
+<a href="{{ game.download_link }}" target="_blank" class="btn btn-primary btn-lg mt-3">Download</a>
+
+<p class="mt-4"><a href="{{ url_for('index') }}">&larr; Back to list</a></p>
+{% endblock %}

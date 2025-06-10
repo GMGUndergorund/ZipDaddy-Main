@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Game List{% endblock %}
+{% block content %}
+<h1>Available Games</h1>
+<ul class="list-group">
+  {% for game in games %}
+    <li class="list-group-item">
+      <a href="{{ url_for('game_detail', game_id=loop.index0) }}">{{ game.title }}</a>
+    </li>
+  {% else %}
+    <li class="list-group-item">No games uploaded yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}
