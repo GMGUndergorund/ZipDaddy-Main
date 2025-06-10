@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 services:
   - type: web
     name: zipdaddy-flask-app
@@ -5,3 +6,12 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     plan: free
+=======
+services:
+  - type: web
+    name: zipdaddy-flask-app
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    plan: free
+>>>>>>> c4ebe9f (Meine Änderungen speichern)

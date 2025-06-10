@@ -1,34 +1,38 @@
 from flask import Flask, render_template, request, redirect, url_for, session, abort
-import os
-import json
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Change to something strong and secret!
+app.secret_key = 'your_secret_key_here'
 
+# SQLite Datenbank-Konfiguration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///games.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+# User-Daten (für Login)
 USERNAME = 'Zipdaddy'
 PASSWORD = 'Kareem.1707'
 
-def load_games():
-    if os.path.exists('games.json'):
-        with open('games.json', 'r') as f:
-            return json.load(f)
-    return []
+# Datenbankmodell für ein Spiel
+class Game(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    download_link = db.Column(db.String(300), nullable=False)
+    description = db.Column(db.Text, nullable=True)
 
-def save_games(games):
-    with open('games.json', 'w') as f:
-        json.dump(games, f, indent=2)
+# DB einmalig erstellen
+@app.before_first_request
+def create_tables():
+    db.create_all()
 
 @app.route('/')
 def index():
-    games = load_games()
+    games = Game.query.all()
     return render_template('index.html', games=games)
 
 @app.route('/game/<int:game_id>')
 def game_detail(game_id):
-    games = load_games()
-    if game_id < 0 or game_id >= len(games):
-        abort(404)
-    game = games[game_id]
+    game = Game.query.get_or_404(game_id)
     return render_template('game_detail.html', game=game)
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -57,15 +61,12 @@ def upload():
             return "Title and Download Link are required."
 
         if not (download_link.startswith('http://') or download_link.startswith('https://')):
-            return "Download Link must be a valid URL starting with http:// or https://"
+            return "Download Link must start with http:// or https://"
 
-        games = load_games()
-        games.append({
-            'title': title,
-            'download_link': download_link,
-            'description': description
-        })
-        save_games(games)
+        new_game = Game(title=title, download_link=download_link, description=description)
+        db.session.add(new_game)
+        db.session.commit()
+
         return redirect(url_for('index'))
 
     return render_template('upload.html')

@@ -5,7 +5,7 @@
 <ul class="list-group">
   {% for game in games %}
     <li class="list-group-item">
-      <a href="{{ url_for('game_detail', game_id=loop.index0) }}">{{ game.title }}</a>
+      <a href="{{ url_for('game_detail', game_id=game.id) }}">{{ game.title }}</a>
     </li>
   {% else %}
     <li class="list-group-item">No games uploaded yet.</li>
