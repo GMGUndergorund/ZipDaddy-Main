@@ -2,14 +2,11 @@
 {% block title %}{{ game.title }}{% endblock %}
 {% block content %}
 <h1>{{ game.title }}</h1>
-
-{% if game.description %}
-  <p>{{ game.description }}</p>
-{% else %}
-  <p><em>No description provided.</em></p>
-{% endif %}
-
-<a href="{{ game.download_link }}" target="_blank" class="btn btn-primary btn-lg mt-3">Download</a>
-
-<p class="mt-4"><a href="{{ url_for('index') }}">&larr; Back to list</a></p>
+<p><strong>Platform:</strong> {{ game.platform or 'Unknown' }}</p>
+<p><strong>Genre:</strong> {{ game.genre or 'Unknown' }}</p>
+<p><strong>Release Date:</strong> {{ game.release_date or 'Unknown' }}</p>
+<p><strong>Description:</strong></p>
+<p>{{ game.description or "No description provided." }}</p>
+<a href="{{ game.download_link }}" class="btn btn-success" target="_blank" rel="noopener noreferrer">Download</a>
+<a href="{{ url_for('index') }}" class="btn btn-secondary ms-2">Back to list</a>
 {% endblock %}
