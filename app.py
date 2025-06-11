@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, abort
+from flask import Flask, render_template, request, redirect, url_for, session, abort, flash
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -17,6 +17,7 @@ class Game(db.Model):
     title = db.Column(db.String(100), nullable=False)
     download_link = db.Column(db.String(300), nullable=False)
     description = db.Column(db.Text, nullable=True)
+    genres = db.Column(db.String(200), nullable=True)  # Neu: Genres als Komma-getrennte Zeichenkette
 
 @app.before_request
 def create_tables_once():
@@ -45,9 +46,11 @@ def login():
         password = request.form['password'].strip()
         if username == USERNAME and password == PASSWORD:
             session['logged_in'] = True
+            flash('Erfolgreich eingeloggt!')
             return redirect(url_for('upload'))
         else:
-            return 'Invalid credentials', 401
+            flash('Ungültige Anmeldedaten', 'danger')
+            return render_template('login.html'), 401
     return render_template('login.html')
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -59,22 +62,26 @@ def upload():
         title = request.form['title'].strip()
         download_link = request.form['download_link'].strip()
         description = request.form.get('description', '').strip()
+        genres = request.form.get('genres', '').strip()
 
         if not title or not download_link:
-            return "Title and Download Link are required.", 400
+            flash("Titel und Download-Link sind erforderlich.", 'warning')
+            return render_template('upload.html'), 400
 
         if not (download_link.startswith('http://') or download_link.startswith('https://')):
-            return "Download Link must start with http:// or https://", 400
+            flash("Download-Link muss mit http:// oder https:// beginnen.", 'warning')
+            return render_template('upload.html'), 400
 
-        # Optional: Check if game with same title exists, update or reject
         existing = Game.query.filter_by(title=title).first()
         if existing:
-            return "A game with this title already exists.", 400
+            flash("Ein Spiel mit diesem Titel existiert bereits.", 'warning')
+            return render_template('upload.html'), 400
 
-        new_game = Game(title=title, download_link=download_link, description=description)
+        new_game = Game(title=title, download_link=download_link, description=description, genres=genres)
         db.session.add(new_game)
         db.session.commit()
 
+        flash("Spiel erfolgreich hochgeladen!", 'success')
         return redirect(url_for('index'))
 
     return render_template('upload.html')
@@ -82,6 +89,7 @@ def upload():
 @app.route('/logout')
 def logout():
     session.clear()
+    flash('Erfolgreich ausgeloggt.')
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
