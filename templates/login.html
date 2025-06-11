@@ -1,16 +1,15 @@
-{% extends "base.html" %}
-{% block title %}Login - ZipDaddy Repacks{% endblock %}
+{% extends "layout.html" %}
 {% block content %}
-<h2>Login (ZipDaddy only)</h2>
-<form method="post" class="mt-4" style="max-width: 400px;">
+<h2>🔐 Admin Login</h2>
+<form method="post">
     <div class="mb-3">
-        <label for="username" class="form-label">Username</label>
-        <input id="username" name="username" type="text" class="form-control" required autofocus>
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-control" required>
     </div>
     <div class="mb-3">
-        <label for="password" class="form-label">Password</label>
-        <input id="password" name="password" type="password" class="form-control" required>
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" required>
     </div>
-    <button type="submit" class="btn btn-primary">Login</button>
+    <button type="submit" class="btn btn-success">Login</button>
 </form>
 {% endblock %}
