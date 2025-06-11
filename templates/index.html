@@ -1,23 +1,37 @@
 {% extends "layout.html" %}
 {% block content %}
-<h2>🎮 Game Library</h2>
-<form class="mb-3" method="get">
-    <input type="text" name="search" class="form-control" placeholder="Search for games..." value="{{ search }}">
+<h1>Spiele Übersicht</h1>
+
+<form method="get" class="mb-4">
+  <input type="text" name="search" placeholder="Spiel suchen..." value="{{ search }}" class="form-control" />
 </form>
-<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Titel</th>
+      <th>Genres</th>
+      <th>Aktionen</th>
+    </tr>
+  </thead>
+  <tbody>
     {% for game in games %}
-    <div class="col">
-        <div class="card bg-secondary text-light h-100">
-            <div class="card-body">
-                <h5 class="card-title">{{ game.title }}</h5>
-                {% if game.genres %}
-                <p><small>Genres: {{ game.genres }}</small></p>
-                {% endif %}
-                <p class="card-text">{{ game.description[:100] }}...</p>
-                <a href="{{ url_for('game_detail', game_id=game.id) }}" class="btn btn-light btn-sm">Details</a>
-            </div>
-        </div>
-    </div>
+    <tr>
+      <td><a href="{{ url_for('game_detail', game_id=game.id) }}">{{ game.title }}</a></td>
+      <td>{{ game.genres or '' }}</td>
+      <td>
+        {% if session.get('logged_in') %}
+          <form method="post" action="{{ url_for('delete_game', game_id=game.id) }}" style="display:inline;" onsubmit="return confirm('Spiel wirklich löschen?');">
+            <button class="btn btn-danger btn-sm">Löschen</button>
+          </form>
+        {% else %}
+          <span class="text-muted">Admin nur</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="3">Keine Spiele gefunden.</td></tr>
     {% endfor %}
-</div>
+  </tbody>
+</table>
 {% endblock %}
