@@ -1,37 +1,65 @@
-{% extends "base.html" %}
-{% block title %}Upload Game{% endblock %}
+{% extends "layout.html" %}
 {% block content %}
-<h1>Upload Game</h1>
+<h2>📤 Upload Game</h2>
 
-{% if error %}
-  <div class="alert alert-danger">{{ error }}</div>
-{% endif %}
+<!-- Flash-Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, msg in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 
-<form method="post" class="mb-3">
-  <div class="mb-3">
-    <label for="title" class="form-label">Title *</label>
-    <input type="text" id="title" name="title" class="form-control" required value="{{ title or '' }}">
-  </div>
-  <div class="mb-3">
-    <label for="platform" class="form-label">Platform</label>
-    <input type="text" id="platform" name="platform" class="form-control" value="{{ platform or '' }}" placeholder="e.g. PC, PS5, Xbox">
-  </div>
-  <div class="mb-3">
-    <label for="genre" class="form-label">Genre</label>
-    <input type="text" id="genre" name="genre" class="form-control" value="{{ genre or '' }}" placeholder="e.g. Action, RPG">
-  </div>
-  <div class="mb-3">
-    <label for="release_date" class="form-label">Release Date</label>
-    <input type="text" id="release_date" name="release_date" class="form-control" value="{{ release_date or '' }}" placeholder="YYYY-MM-DD or Year">
-  </div>
-  <div class="mb-3">
-    <label for="download_link" class="form-label">Download Link *</label>
-    <input type="url" id="download_link" name="download_link" class="form-control" required value="{{ download_link or '' }}">
-  </div>
-  <div class="mb-3">
-    <label for="description" class="form-label">Description</label>
-    <textarea id="description" name="description" rows="5" class="form-control">{{ description or '' }}</textarea>
-  </div>
-  <button type="submit" class="btn btn-primary">Upload</button>
+<form method="post">
+    <div class="mb-3">
+        <label class="form-label">Title *</label>
+        <input type="text" name="title" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Download Link *</label>
+        <input type="url" name="download_link" class="form-control" placeholder="https://example.com/game" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-control" rows="4"></textarea>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Genres (comma-separated)</label>
+        <input type="text" name="genres" class="form-control" placeholder="Action, RPG, Strategy">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Release Year</label>
+        <input type="number" name="release_year" class="form-control" min="1970" max="2100" placeholder="2024">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Platform</label>
+        <input type="text" name="platform" class="form-control" placeholder="PC, PS5, Xbox, etc.">
+    </div>
+    <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" value="yes" id="featured" name="featured">
+        <label class="form-check-label" for="featured">
+            Mark as Featured Game
+        </label>
+    </div>
+    <button type="submit" class="btn btn-success">Upload</button>
+</form>
+
+<!-- Admin-Action: Spiele löschen -->
+<hr>
+<h4>Delete Existing Game</h4>
+<form method="post" action="{{ url_for('delete_game') }}">
+    <div class="mb-3">
+        <label class="form-label">Select Game to Delete</label>
+        <select name="game_id" class="form-select" required>
+            {% for g in games %}
+                <option value="{{ g.id }}">{{ g.title }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this game?');">Delete Game</button>
 </form>
 {% endblock %}
