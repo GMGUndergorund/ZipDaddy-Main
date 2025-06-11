@@ -1,12 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for, session, abort, flash
+from flask import Flask, render_template, request, redirect, url_for, session, abort
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 
-# SQLite config
+# SQLite configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///games.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
 USERNAME = 'Zipdaddy'
@@ -17,11 +18,7 @@ class Game(db.Model):
     title = db.Column(db.String(100), nullable=False)
     download_link = db.Column(db.String(300), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    genres = db.Column(db.String(200), nullable=True)  # Kommagetrennt
-
-@app.before_first_request
-def create_tables():
-    db.create_all()
+    genres = db.Column(db.String(200), nullable=True)
 
 @app.route('/')
 def index():
@@ -35,8 +32,7 @@ def index():
 @app.route('/game/<int:game_id>')
 def game_detail(game_id):
     game = Game.query.get_or_404(game_id)
-    genres_list = [g.strip() for g in game.genres.split(',')] if game.genres else []
-    return render_template('game_detail.html', game=game, genres=genres_list)
+    return render_template('game_detail.html', game=game)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -45,10 +41,9 @@ def login():
         password = request.form['password'].strip()
         if username == USERNAME and password == PASSWORD:
             session['logged_in'] = True
-            flash('Erfolgreich eingeloggt!', 'success')
             return redirect(url_for('upload'))
         else:
-            flash('Ungültige Zugangsdaten!', 'danger')
+            return 'Invalid credentials', 401
     return render_template('login.html')
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -60,44 +55,33 @@ def upload():
         title = request.form['title'].strip()
         download_link = request.form['download_link'].strip()
         description = request.form.get('description', '').strip()
-        genres = request.form.get('genres', '').strip()
+        genres_raw = request.form.get('genres', '').strip()
+        genres = ', '.join([g.strip() for g in genres_raw.split(',') if g.strip()])
 
         if not title or not download_link:
-            flash("Titel und Downloadlink sind Pflichtfelder.", 'danger')
-            return redirect(url_for('upload'))
+            return "Title and Download Link are required.", 400
 
         if not (download_link.startswith('http://') or download_link.startswith('https://')):
-            flash("Downloadlink muss mit http:// oder https:// beginnen.", 'danger')
-            return redirect(url_for('upload'))
+            return "Download Link must start with http:// or https://", 400
 
         existing = Game.query.filter_by(title=title).first()
         if existing:
-            flash("Ein Spiel mit diesem Titel existiert bereits.", 'danger')
-            return redirect(url_for('upload'))
+            return "A game with this title already exists.", 400
 
         new_game = Game(title=title, download_link=download_link, description=description, genres=genres)
         db.session.add(new_game)
         db.session.commit()
-        flash('Spiel erfolgreich hochgeladen!', 'success')
+
         return redirect(url_for('index'))
 
     return render_template('upload.html')
 
-@app.route('/delete/<int:game_id>', methods=['POST'])
-def delete_game(game_id):
-    if not session.get('logged_in'):
-        abort(403)
-    game = Game.query.get_or_404(game_id)
-    db.session.delete(game)
-    db.session.commit()
-    flash('Spiel wurde gelöscht.', 'success')
-    return redirect(url_for('index'))
-
 @app.route('/logout')
 def logout():
     session.clear()
-    flash('Erfolgreich ausgeloggt.', 'info')
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(host='0.0.0.0', port=5000, debug=True)
