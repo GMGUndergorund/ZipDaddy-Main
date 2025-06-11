@@ -1,21 +1,37 @@
 {% extends "base.html" %}
-{% block title %}Upload Game - ZipDaddy Repacks{% endblock %}
+{% block title %}Upload Game{% endblock %}
 {% block content %}
-<h2>Submit New Game Download Link (ZipDaddy only)</h2>
-<form method="post" class="mt-4" style="max-width: 600px;">
-    <div class="mb-3">
-        <label for="title" class="form-label">Game Title</label>
-        <input id="title" name="title" type="text" class="form-control" required>
-    </div>
-    <div class="mb-3">
-        <label for="download_link" class="form-label">Download Link (URL)</label>
-        <input id="download_link" name="download_link" type="url" class="form-control" required placeholder="https://example.com/game.zip">
-        <div class="form-text">Enter a direct download link or hosting URL.</div>
-    </div>
-    <div class="mb-3">
-        <label for="description" class="form-label">Description (optional)</label>
-        <textarea id="description" name="description" rows="3" class="form-control" placeholder="Add any notes or version info"></textarea>
-    </div>
-    <button type="submit" class="btn btn-success">Submit</button>
+<h1>Upload Game</h1>
+
+{% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<form method="post" class="mb-3">
+  <div class="mb-3">
+    <label for="title" class="form-label">Title *</label>
+    <input type="text" id="title" name="title" class="form-control" required value="{{ title or '' }}">
+  </div>
+  <div class="mb-3">
+    <label for="platform" class="form-label">Platform</label>
+    <input type="text" id="platform" name="platform" class="form-control" value="{{ platform or '' }}" placeholder="e.g. PC, PS5, Xbox">
+  </div>
+  <div class="mb-3">
+    <label for="genre" class="form-label">Genre</label>
+    <input type="text" id="genre" name="genre" class="form-control" value="{{ genre or '' }}" placeholder="e.g. Action, RPG">
+  </div>
+  <div class="mb-3">
+    <label for="release_date" class="form-label">Release Date</label>
+    <input type="text" id="release_date" name="release_date" class="form-control" value="{{ release_date or '' }}" placeholder="YYYY-MM-DD or Year">
+  </div>
+  <div class="mb-3">
+    <label for="download_link" class="form-label">Download Link *</label>
+    <input type="url" id="download_link" name="download_link" class="form-control" required value="{{ download_link or '' }}">
+  </div>
+  <div class="mb-3">
+    <label for="description" class="form-label">Description</label>
+    <textarea id="description" name="description" rows="5" class="form-control">{{ description or '' }}</textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Upload</button>
 </form>
 {% endblock %}
